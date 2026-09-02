@@ -1,5 +1,16 @@
 # 安装说明(INSTALL)
 
+## 方式〇: pip 安装(已发布到 PyPI 官方源, 最推荐)
+
+```bash
+pip install deepskins          # 已发布: https://pypi.org/project/deepskins/
+deepskins list                 # 24 套一览
+deepskins url deepseek-12      # 打印仓库地址
+deepskins install aifamily-7   # 克隆到 ~/.deepskin-suits 并设置壁纸
+deepskins sync                 # 克隆全部 24 套
+```
+备用: `pip install "git+https://github.com/WPH666-py/Desktop-IDE-AI-Skin"`
+
 ## 方式一: 给 AI 一句话(DeepKing / Claude Code / Kimi Code / CodeX / Trae / Harness / Cursor …)
 
 把任一皮肤仓库链接发给 AI 并说「安装」, AI 读该仓库 `AGENTS.md` 自动完成全部步骤
@@ -10,7 +21,7 @@
 请安装 https://github.com/WPH666-py/AI-Family-Skin-Suit7 的 AI 全家桶皮肤7
 ```
 
-## 方式二: pip 安装 `deepskins`
+## 方式二: pip 安装 `deepskins`(git 备用)
 
 ```bash
 pip install "git+https://github.com/WPH666-py/Desktop-IDE-AI-Skin"
