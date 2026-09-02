@@ -15,9 +15,9 @@ AI 会读取该仓库的 `AGENTS.md` 自动完成: 克隆 → 装 Pillow → 生
 请安装 https://github.com/WPH666-py/Deepseek-Skin-Suit1 的大肥鱼皮肤1
 ```
 
-### ② pip 安装 Python 包 `deepskins`
+### ② pip 安装(已发布 PyPI 官方源)
 ```bash
-pip install "git+https://github.com/WPH666-py/Desktop-IDE-AI-Skin"
+pip install deepskins          # https://pypi.org/project/deepskins/
 deepskins list                 # 列出全部 24 套
 deepskins install deepseek-1   # 克隆并安装(自动生成+设置壁纸)
 deepskins url aifamily-7       # 打印仓库地址
