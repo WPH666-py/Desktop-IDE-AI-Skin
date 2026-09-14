@@ -125,3 +125,23 @@ deepskins doctor        # 已装好时: 直接看代理探测结果与各站点 
 > **pip 装 Pillow** 时会自动带上探测到的代理(顺序: 环境变量 → Windows 注册表 →
 > 本机常见端口)。用户 git 已自配代理时不覆盖。
 > 关闭: `DEEPSKINS_NO_PROXY=1`; 手动指定: `DEEPSKINS_PROXY=http://host:port`。
+
+## 壁纸被任务栏/桌面图标挡住怎么办
+
+2×2 拼贴和"完整卡片"单图默认**垂直居中**: 2×2 整块约占屏高 91%, 卡片底边离屏底约 43px,
+所以在任务栏较厚或图标排到下方的桌面上, 底部内容会被压住(壁纸本身没有缩放裁切,
+纯粹是位置偏下)。
+
+各套件已内置**垂直锚点**, 默认 `top`(把内容放进安全区, 底部留白):
+
+```bash
+python tools/wallpaper.py grid --anchor top      # 默认: 底部留白(2×2 约 120px)
+python tools/wallpaper.py grid --anchor center   # 回到旧的居中(会压到任务栏)
+python tools/wallpaper.py grid --pad-bottom 20   # 自定义底部预留(百分数或 0~1 小数)
+```
+
+也可用环境变量: `DEEPSKIN_GRID_ANCHOR=top|center|bottom`、`DEEPSKIN_GRID_PAD_BOTTOM=11`(百分数)。
+
+> 1536×960 实测: 2×2 修前 y=14..946(压住任务栏) → 修后 y=14..840(留 120px);
+> 完整卡片修前 y=43..917(留 43px) → 修后 y=43..812(留 148px)。
+> 屏幕很矮时会自动回退居中, 避免格子被压得过小。
