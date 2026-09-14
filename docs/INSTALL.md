@@ -5,6 +5,7 @@
 ```bash
 pip install deepskins          # 已发布: https://pypi.org/project/deepskins/
 deepskins list                 # 32 套一览
+deepskins doctor               # 体检: 代理探测 / 网络 / git / Pillow
 deepskins url deepseek-12      # 打印仓库地址
 deepskins install aifamily-7   # 克隆到 ~/.deepskin-suits 并设置壁纸
 deepskins wallpaper deepseek-22 1   # 直接切换第 22 套的第 1 张壁纸
@@ -86,3 +87,41 @@ Settings / Preferences → Appearance & Behavior → **Background Image** → `+
 - **壁纸尺寸**: 脚本默认取屏幕分辨率, 可 `--size 2560x1440` 自定义; 多显示器建议系统设为「跨屏/平铺」。
 - **无网安装**: 素材内置在仓库内, 装过 Pillow 后离线可用。
 - **素材更新**: 重新拉取仓库后运行任意 `--set` 命令即热更新(自动按素材/脚本修改时间重新合成)。
+
+## 装不上 / SSL 报错怎么办
+
+典型症状: `pip install deepskins` 报 `SSL: UNEXPECTED_EOF_WHILE_READING` 或
+`Read timed out (pypi.org:443)`。
+
+原因通常是**桌面代理软件只设了 Windows 系统代理**:
+
+| 通道 | 读代理的方式 | 结果 |
+|---|---|---|
+| git | 读 Windows 系统代理(注册表) | 能用 → 克隆皮肤仓库正常 |
+| pip / requests | **只读 `HTTP_PROXY` / `HTTPS_PROXY` 环境变量** | 读不到 → 直连 pypi.org, 在受限网络下就断 |
+
+诊断与三条出路:
+
+```bash
+deepskins doctor        # 已装好时: 直接看代理探测结果与各站点 HTTPS 实测
+```
+
+1. **用国内镜像装**(最省事):
+   ```bash
+   pip install -i https://pypi.tuna.tsinghua.edu.cn/simple deepskins
+   ```
+2. **给 pip 设一次环境变量**(之后 pip 自己就走代理了):
+   ```powershell
+   setx HTTPS_PROXY http://127.0.0.1:7897
+   setx HTTP_PROXY  http://127.0.0.1:7897
+   ```
+   (端口以你的代理软件为准; 重新开一个终端生效)
+3. **临时单次使用**:
+   ```bash
+   pip install --proxy http://127.0.0.1:7897 deepskins
+   ```
+
+> 包内已内置代理自动探测: `deepskins install/wallpaper` 在调用 **git 克隆** 和
+> **pip 装 Pillow** 时会自动带上探测到的代理(顺序: 环境变量 → Windows 注册表 →
+> 本机常见端口)。用户 git 已自配代理时不覆盖。
+> 关闭: `DEEPSKINS_NO_PROXY=1`; 手动指定: `DEEPSKINS_PROXY=http://host:port`。

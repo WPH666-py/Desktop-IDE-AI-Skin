@@ -13,6 +13,8 @@ import subprocess
 import sys
 import uuid
 
+from . import proxy
+
 ROOT_DIR = os.path.join(os.path.expanduser("~"), ".deepskin-suits")
 GITHUB = "https://github.com/WPH666-py/%s.git"
 
@@ -25,18 +27,23 @@ def suit_dir(repo):
 
 
 def ensure_suit(repo, clone=True):
-    """返回皮肤仓库目录; 缺失时克隆(--depth 1)。"""
+    """返回皮肤仓库目录; 缺失时克隆(--depth 1)。
+
+    会自动带上探测到的代理(用户 git 已自配代理时不覆盖) —— 桌面代理软件通常只设
+    Windows 系统代理, git 能读、pip 不能读, 这里统一补齐。
+    """
     dst = suit_dir(repo)
     if os.path.exists(os.path.join(dst, "tools", "skin_core.py")):
         return dst
+    px = proxy.git_config_args()
     if os.path.exists(os.path.join(dst, ".git")):
-        subprocess.check_call(["git", "-C", dst, "pull", "--ff-only"],
+        subprocess.check_call(["git"] + px + ["-C", dst, "pull", "--ff-only"],
                               stdout=subprocess.DEVNULL)
         return dst
     if not clone:
         return None
     os.makedirs(ROOT_DIR, exist_ok=True)
-    subprocess.check_call(["git", "clone", "--depth", "1", GITHUB % repo, dst],
+    subprocess.check_call(["git"] + px + ["clone", "--depth", "1", GITHUB % repo, dst],
                           stdout=subprocess.DEVNULL)
     return dst
 
@@ -117,16 +124,24 @@ def export_all(repo, out_dir=None, size=None):
 
 
 def ensure_pillow():
-    """确保 Pillow 可用, 缺失时自动 pip 安装(与各皮肤仓库 install.py 行为一致)。"""
+    """确保 Pillow 可用, 缺失时自动 pip 安装(自动带上探测到的代理)。"""
     try:
         import PIL  # noqa: F401
         return True
     except ImportError:
         pass
     print("[deepskins] 未检测到 Pillow, 正在自动安装 ...")
+    url, source = proxy.detect()
+    if url:
+        print("[deepskins] 使用代理: %s (%s)" % (url, source))
     try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "--user", "pillow"])
+        # pip 只认环境变量, 这里显式注入(桌面代理软件通常不写这些变量)
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "--user", "pillow"],
+                              env=proxy.env_with_proxy())
     except subprocess.CalledProcessError:
+        print("[deepskins] Pillow 安装失败。若卡在 pypi.org, 试试国内镜像:\n"
+              "  %s -m pip install --user -i https://pypi.tuna.tsinghua.edu.cn/simple pillow"
+              % sys.executable, file=sys.stderr)
         return False
     return True
 

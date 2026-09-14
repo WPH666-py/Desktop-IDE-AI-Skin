@@ -6,6 +6,7 @@
   deepskins url <id|repo>         # 打印仓库地址
   deepskins install <id|repo>     # 克隆到 ~/.deepskin-suits 并安装(生成+设置壁纸)
   deepskins wallpaper <id> [模式] # 直接切换某套的壁纸, 模式 grid|1..4|random|all
+  deepskins doctor                # 体检: 代理探测 / 网络 / git / Python / Pillow
   deepskins sync                  # 克隆全部(不安装)
 """
 import argparse
@@ -14,6 +15,8 @@ import os
 import subprocess
 import sys
 from importlib import resources
+
+from . import proxy
 
 ROOT_DIR = os.path.join(os.path.expanduser("~"), ".deepskin-suits")
 
@@ -63,14 +66,17 @@ def cmd_url(args):
 def _clone(repo):
     os.makedirs(ROOT_DIR, exist_ok=True)
     dst = os.path.join(ROOT_DIR, repo)
+    # 自动带上探测到的代理(用户 git 已自配代理时不覆盖)
+    px = proxy.git_config_args()
     if os.path.exists(os.path.join(dst, ".git")):
         print("[deepskins] %s 已存在, 拉取更新 ..." % repo)
-        subprocess.check_call(["git", "-C", dst, "pull", "--ff-only"], stdout=subprocess.DEVNULL)
+        subprocess.check_call(["git"] + px + ["-C", dst, "pull", "--ff-only"],
+                              stdout=subprocess.DEVNULL)
     else:
         print("[deepskins] 克隆 %s ..." % repo)
         subprocess.check_call(
-            ["git", "clone", "--depth", "1",
-             "https://github.com/WPH666-py/%s.git" % repo, dst],
+            ["git"] + px + ["clone", "--depth", "1",
+                            "https://github.com/WPH666-py/%s.git" % repo, dst],
             stdout=subprocess.DEVNULL)
     return dst
 
@@ -127,6 +133,104 @@ def cmd_wallpaper(args):
     return subprocess.call([sys.executable, script, normalize_mode(args.mode), "--set"], cwd=dst)
 
 
+def cmd_doctor(args):
+    """体检: 代理探测 / 网络可达性 / git / Python / Pillow。
+
+    专治这一类问题: 桌面代理软件只设了 Windows 系统代理, git 能用而 pip 不能用,
+    于是 pip 直连 pypi.org 报 SSL UNEXPECTED_EOF / Read timed out。
+    """
+    import platform
+    import socket
+
+    print("# deepskins 体检")
+    print()
+    print("Python      : %s (%s)" % (platform.python_version(), sys.executable))
+    print("系统        : %s %s" % (platform.system(), platform.release()))
+
+    # ---- git ----
+    try:
+        gv = subprocess.run(["git", "--version"], stdout=subprocess.PIPE,
+                            stderr=subprocess.DEVNULL, timeout=10, text=True).stdout.strip()
+        print("git         : %s" % (gv or "可用"))
+        gp = subprocess.run(["git", "config", "--global", "--get", "http.proxy"],
+                            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                            timeout=10, text=True).stdout.strip()
+        print("git 代理    : %s" % (gp or "(未配置, 将走系统代理或自动探测)"))
+    except Exception as e:
+        print("git         : 不可用 (%s)" % e)
+
+    # ---- Pillow ----
+    try:
+        import PIL  # noqa: F401
+        print("Pillow      : 已安装")
+    except ImportError:
+        print("Pillow      : 未安装 (install/wallpaper 时会自动 pip 装)")
+
+    # ---- 代理探测 ----
+    print()
+    print("— 代理 —")
+    url, source = proxy.detect(force=True)
+    if url:
+        print("探测结果    : %s" % url)
+        print("来源        : %s" % source)
+    else:
+        print("探测结果    : 未探测到代理 (%s)" % (source or "无"))
+    print("说明        : pip/requests 只认 HTTP_PROXY/HTTPS_PROXY 环境变量,")
+    print("              不读 Windows 系统代理; 本工具会把探测到的代理显式传给 git/pip。")
+    print("关闭探测    : 设 DEEPSKINS_NO_PROXY=1   手动指定: DEEPSKINS_PROXY=http://host:port")
+
+    # ---- 网络可达性 ----
+    # 注意: 必须真做一次 HTTPS 请求(TCP 能连 != TLS 能握手)。
+    # 有些网络会对特定域名在 TLS 握手阶段断开 —— 只测端口会误报"可连"。
+    print()
+    print("— 网络(HTTPS 实测) —")
+
+    def _https_ok(url, timeout=10):
+        import ssl
+        import urllib.request
+        req = urllib.request.Request(url, method="HEAD",
+                                     headers={"User-Agent": "deepskins-doctor"})
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                return True, "HTTP %d" % r.status
+        except Exception as e:
+            msg = type(e).__name__
+            reason = getattr(e, "reason", None)
+            if isinstance(reason, ssl.SSLError):
+                msg = "TLS 握手失败(%s)" % reason.__class__.__name__
+            elif reason is not None:
+                msg = str(reason)[:48]
+            else:
+                msg = str(e)[:48]
+            return False, msg
+
+    targets = [
+        ("GitHub(克隆皮肤仓库)", "https://github.com"),
+        ("PyPI 官方源(pip 装包)", "https://pypi.org/simple/"),
+        ("PyPI CDN(下载包体)", "https://files.pythonhosted.org/"),
+        ("清华镜像", "https://pypi.tuna.tsinghua.edu.cn/simple/"),
+    ]
+    results = {}
+    for label, url in targets:
+        ok, note = _https_ok(url)
+        results[label] = ok
+        print("  %-24s %-42s %s" % (label, note, "✅" if ok else "❌"))
+
+    # ---- 结论 ----
+    print()
+    pypi_ok = results.get("PyPI 官方源(pip 装包)")
+    mirror_ok = results.get("清华镜像")
+    if pypi_ok:
+        print("结论: pypi.org 正常, `pip install deepskins` 可直接用。")
+    elif mirror_ok:
+        print("结论: pypi.org 连不上(TLS 被中断), 但镜像可用 —— 请用镜像装包:")
+        print("  pip install -i https://pypi.tuna.tsinghua.edu.cn/simple deepskins")
+        print("  (已装好之后, 本包的 git/pip 调用会自动带上探测到的代理)")
+    else:
+        print("结论: pypi.org 与镜像都连不上, 请检查网络或代理设置。")
+    return 0
+
+
 def main(argv=None):
     prepare_console()
     ap = argparse.ArgumentParser(prog="deepskins", description="大肥鱼 & AI 全家桶 皮肤目录/安装器")
@@ -141,6 +245,7 @@ def main(argv=None):
     p.add_argument("mode", nargs="?", default="random",
                    help="grid | 1 | 2 | 3 | 4 | random | all (默认 random)")
     p.add_argument("--list", dest="list_modes", action="store_true", help="只列出可用模式")
+    sub.add_parser("doctor", help="体检: 代理探测 / 网络 / git / Pillow")
     sub.add_parser("sync", help="克隆全部皮肤(不安装)")
     args = ap.parse_args(argv)
     if args.cmd == "list":
@@ -151,6 +256,8 @@ def main(argv=None):
         return cmd_install(args)
     if args.cmd == "wallpaper":
         return cmd_wallpaper(args)
+    if args.cmd == "doctor":
+        return cmd_doctor(args)
     if args.cmd == "sync":
         return cmd_sync(args)
     return 0
