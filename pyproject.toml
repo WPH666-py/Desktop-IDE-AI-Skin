@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "deepskins"
-version = "0.2.0"
-description = "DeepSeek 大肥鱼 & AI 全家桶 皮肤目录: 25 套壁纸一键克隆安装 + 壁纸切换 (pip install deepskins)"
+version = "0.3.0"
+description = "DeepSeek 大肥鱼 & AI 全家桶 皮肤目录: 26 套壁纸一键克隆安装 + 壁纸切换 (pip install deepskins)"
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "MIT" }
