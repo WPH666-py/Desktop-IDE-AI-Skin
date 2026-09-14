@@ -1,7 +1,7 @@
 # AGENTS.md — Desktop-IDE-AI-Skin · AI 自动安装指引(AI 助手必读)
 
 当用户把本仓库地址交给你并说「安装大肥鱼皮肤 / AI 壁纸 / 皮肤大全」时, 按下述步骤执行。
-本仓库是 **DeepSeek 大肥鱼 & AI 全家桶皮肤大全**: 24 套独立皮肤仓库的统一目录与 pip 包
+本仓库是 **DeepSeek 大肥鱼 & AI 全家桶皮肤大全**: 32 套独立皮肤仓库的统一目录与 pip 包
 (内容见 `catalog.json`, 每个皮肤仓库都有各自的 `AGENTS.md` 与 `tools/install.py`)。
 
 ## 第 1 步: 确认用户想要哪套(或全部)
@@ -31,9 +31,10 @@ python scripts/sync_all.py      # 全部克隆到 ~/.deepskin-suits
 ## C. pip 安装 Python 包
 
 ```bash
-pip install "git+https://github.com/WPH666-py/Desktop-IDE-AI-Skin"
-deepskins list
+pip install deepskins         # 已发布 PyPI(推荐); 备用: pip install "git+https://github.com/WPH666-py/Desktop-IDE-AI-Skin"
+deepskins list                 # 列出全部 32 套
 deepskins install deepseek-1   # 克隆+设置壁纸
+deepskins wallpaper deepseek-1 1   # 直接切换某套的壁纸(简写 1/2/3..; 加 --list 看模式)
 ```
 
 ## D. IDE 增强(按用户环境)
