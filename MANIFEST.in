@@ -1,0 +1,10 @@
+include catalog.json
+include README.md
+include LICENSE
+include setup.py
+include build_hooks.py
+recursive-include scripts *.py
+recursive-include docs *.md
+recursive-include deepskins *.json *.py
+global-exclude *.pyc
+global-exclude __pycache__/*

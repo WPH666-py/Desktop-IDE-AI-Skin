@@ -1,9 +1,10 @@
 # 🐳 Desktop · IDE · AI Skin — 大肥鱼 & AI 全家桶 皮肤大全
 
-**DeepSeek 蓝色大肥鱼** ×14 套 + **AI 全家桶**(GPT / Claude / GLM / Kimi / DeepSeek / 千问 / MiniMax / Grok)×10 套
+**DeepSeek 蓝色大肥鱼** ×15 套 + **AI 全家桶**(GPT / Claude / GLM / Kimi / DeepSeek / 千问 / MiniMax / Grok)×10 套
 主题皮肤的统一目录与安装器。所有皮肤: 素材内置、离线可用、跨平台(Windows / macOS / Linux)、
+壁纸随时可切换(2×2 拼贴 / 单图 / 随机 / 定时轮换),
 支持 **DeepKing / VSCode / Harness / CodeX / Trae / PyCharm / Claude Code / Kimi Code** 等环境与**桌面桌宠**,
-24 套彼此独立、可同时安装、各自切换。
+25 套彼此独立、可同时安装、各自切换。
 
 ## 🚀 三种安装方式
 
@@ -18,13 +19,17 @@ AI 会读取该仓库的 `AGENTS.md` 自动完成: 克隆 → 装 Pillow → 生
 ### ② pip 安装(已发布 PyPI 官方源)
 ```bash
 pip install deepskins          # https://pypi.org/project/deepskins/
-deepskins list                 # 列出全部 24 套
+deepskins list                 # 列出全部 25 套
 deepskins install deepseek-1   # 克隆并安装(自动生成+设置壁纸)
+deepskins wallpaper deepseek-15        # 直接换第 15 套的壁纸(默认随机)
+deepskins wallpaper deepseek-15 3      # 切到第 3 张单图; 加 --list 看全部模式
 deepskins url aifamily-7       # 打印仓库地址
 deepskins sync                 # 克隆全部
 ```
 > 本包完全符合 PyPI 规范(pyproject.toml)。由于需要你的 PyPI 账号凭据才能发布到官方源,
 > 默认走 `git+` 安装; 之后你可用 `python -m build && python -m twine upload dist/*` 一键上传。
+> `deepskins wallpaper <id> [模式]` 会自动找到(必要时克隆)对应皮肤仓库、合成并设为系统壁纸,
+> 不用自己进仓库找脚本。
 
 ### ③ 手动
 ```bash
@@ -34,7 +39,7 @@ python tools/install.py        # 生成壁纸并设置桌面(Windows 也可双�
 
 ## 📚 皮肤目录
 
-### DeepSeek 蓝色大肥鱼(14 套)
+### DeepSeek 蓝色大肥鱼(15 套)
 
 | 仓库 | 主题 | 样式 |
 |---|---|---|
@@ -52,6 +57,7 @@ python tools/install.py        # 生成壁纸并设置桌面(Windows 也可双�
 | [Deepseek-Skin-Suit12](https://github.com/WPH666-py/Deepseek-Skin-Suit12) | 漂浮在蓝海水面(宽幅) | 全屏/卡片单图 |
 | [Deepseek-Skin-Suit13](https://github.com/WPH666-py/Deepseek-Skin-Suit13) | 黑裙礼装/蓝发女仆 | 1×2 |
 | [Deepseek-Skin-Suit14](https://github.com/WPH666-py/Deepseek-Skin-Suit14) | 你愿意和我…吗/我不知道耶/就骚了/好模型 | 2×2 |
+| [Deepseek-Skin-Suit15](https://github.com/WPH666-py/Deepseek-Skin-Suit15) | 你愿意和我…吗?/DSH? DeepSeek Hentai?/大烧货吗?/正在思考… | 2×2 |
 
 ### AI 全家桶(10 套, GPT / Claude / GLM / Kimi / DeepSeek / 千问 / MiniMax / Grok)
 
@@ -82,7 +88,7 @@ python tools/install.py        # 生成壁纸并设置桌面(Windows 也可双�
 ## 📁 仓库结构
 
 ```
-catalog.json      30 套皮肤机器可读目录
+catalog.json      25 套皮肤机器可读目录
 deepskins/        Python 包(deepskins CLI): list / install / url / sync
 scripts/          sync_all.py: 克隆全部皮肤
 docs/INSTALL.md   完整安装说明(含 VS Code 扩展、JetBrains、常见问题)

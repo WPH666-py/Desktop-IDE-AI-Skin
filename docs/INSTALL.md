@@ -4,10 +4,11 @@
 
 ```bash
 pip install deepskins          # 已发布: https://pypi.org/project/deepskins/
-deepskins list                 # 24 套一览
+deepskins list                 # 25 套一览
 deepskins url deepseek-12      # 打印仓库地址
 deepskins install aifamily-7   # 克隆到 ~/.deepskin-suits 并设置壁纸
-deepskins sync                 # 克隆全部 24 套
+deepskins wallpaper deepseek-15 3   # 直接切换第 15 套的第 3 张壁纸
+deepskins sync                 # 克隆全部 25 套
 ```
 备用: `pip install "git+https://github.com/WPH666-py/Desktop-IDE-AI-Skin"`
 
@@ -26,10 +27,13 @@ deepskins sync                 # 克隆全部 24 套
 ```bash
 pip install "git+https://github.com/WPH666-py/Desktop-IDE-AI-Skin"
 
-deepskins list                  # 24 套一览
+deepskins list                  # 25 套一览
 deepskins url deepseek-12       # 打印仓库地址
 deepskins install aifamily-7    # 克隆到 ~/.deepskin-suits 并设置壁纸
-deepskins sync                  # 克隆全部 24 套
+deepskins wallpaper deepseek-15 # 直接切换第 15 套的壁纸(不带模式=随机)
+deepskins wallpaper deepseek-15 3   # 切到第 3 张单图(简写 1/2/3/4)
+deepskins wallpaper deepseek-15 --list   # 看这套有哪些模式
+deepskins sync                  # 克隆全部 25 套
 ```
 
 > PyPI 说明: `pyproject.toml` 已按发布规范写好。官方源(pypi.org)上传需要你自己的 PyPI 账号令牌,
@@ -74,7 +78,7 @@ Settings / Preferences → Appearance & Behavior → **Background Image** → `+
 ## 依赖与兼容
 
 - Python 3.9+(Pillow 缺失自动安装); 无 Python 时: Windows `winget install Python.Python.3.11`。
-- 运行目录隔离: DeepSeek 系列 `~/.deepskin*`, AI 全家桶 `~/.aifamily*`;24 套可同时安装互不覆盖。
+- 运行目录隔离: DeepSeek 系列 `~/.deepskin*`, AI 全家桶 `~/.aifamily*`;25 套可同时安装互不覆盖。
 - 桌宠透明: Windows 原生支持; macOS/Linux 部分桌面不支持透明色会退化为白底卡片, 功能不受影响。
 
 ## 常见问题
