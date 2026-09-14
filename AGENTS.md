@@ -20,6 +20,8 @@ python tools/install.py
 - Windows 无 Python: `winget install Python.Python.3.11`; macOS: `brew install python`; Ubuntu: `sudo apt install python3 python3-pil`。
 - 另附玩法: `python tools/wallpaper.py random --set` 随机、`cycle 30` 每 30 分钟随机、
   `switcher.py` 图形切换器、`pet.py` 桌面桌宠(右键换表情)。
+- 用户说"壁纸被任务栏/桌面图标挡住"时: 各套件已默认 `--anchor top`(底部留白); 可再调
+  `python tools/wallpaper.py grid --anchor top --pad-bottom 15`(百分数), 或 `--anchor center` 回旧行为。
 
 ## B. 全部克隆(可选)
 
