@@ -19,6 +19,7 @@ AI 会读取该仓库的 `AGENTS.md` 自动完成: 克隆 → 装 Pillow → 生
 ### ② pip 安装(已发布 PyPI 官方源)
 ```bash
 pip install deepskins          # https://pypi.org/project/deepskins/
+deepskins                      # 不带参数 = 命令总览
 deepskins list                 # 列出全部 32 套
 deepskins install deepseek-1   # 克隆并安装(自动生成+设置壁纸)
 deepskins wallpaper deepseek-22        # 直接换第 22 套的壁纸(默认随机)
@@ -26,7 +27,13 @@ deepskins wallpaper deepseek-22 1      # 切到第 1 张单图; 加 --list 看�
 deepskins doctor               # 体检: 代理探测 / 网络 / git / Pillow
 deepskins url aifamily-7       # 打印仓库地址
 deepskins sync                 # 克隆全部
+deepskins --version            # 看版本
 ```
+> **兼容性: Python 3.8 ~ 3.13 全部支持**（CI 里 3 平台 × 6 版本逐个装 wheel 真跑）。
+> `pip` 装完若敲 `deepskins` 提示「找不到命令」，那不是安装失败 —— 见
+> [docs/INSTALL.md](docs/INSTALL.md) 里「装完敲 deepskins 说找不到命令」一节，
+> 里面给的是**从当前 python 推导路径**的写法，不写死任何版本号。
+>
 > 本包完全符合 PyPI 规范(pyproject.toml)。由于需要你的 PyPI 账号凭据才能发布到官方源,
 > 默认走 `git+` 安装; 之后你可用 `python -m build && python -m twine upload dist/*` 一键上传。
 > `deepskins wallpaper <id> [模式]` 会自动找到(必要时克隆)对应皮肤仓库、合成并设为系统壁纸,

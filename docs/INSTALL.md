@@ -13,6 +13,42 @@ deepskins sync                 # 克隆全部 32 套
 ```
 备用: `pip install "git+https://github.com/WPH666-py/Desktop-IDE-AI-Skin"`
 
+### 装完敲 `deepskins` 说「找不到命令」?（任何 Python 版本都适用）
+
+`pip` 装完通常会打印一句警告: `...\Scripts' which is not on PATH`。此时直接敲
+`deepskins` 会报 `无法将"deepskins"项识别为 cmdlet…`(Windows)或 `command not found`
+(macOS / Linux)。**这不是安装失败** —— 先确认包在不在:
+
+```bash
+pip show deepskins        # 能显示版本就说明装好了
+```
+
+然后三选一。注意下面**没有写死任何 Python 版本号** —— 网上抄来的那种
+`...\Programs\Python\Python3<版本号>\Scripts` 路径, 只有当你恰好也装的正是那个版本时才成立:
+
+```bash
+# ① 最稳: 用模块方式调用。用「你装包的那个 python」跑, 3.8~3.13 都对
+python -m deepskins list
+py -3 -m deepskins list          # Windows 装了 py 启动器时
+python3 -m deepskins list        # macOS / Linux
+```
+
+```bash
+# ② 打印你这个 python 的 Scripts 目录(exe 就在里面), 再拿完整路径直接调
+python -c "import sys,os;print(os.path.dirname(sys.executable))"
+```
+
+```powershell
+# ③ 把它永久加进用户 PATH(之后重开终端, deepskins 就能直接敲)
+$s = python -c "import sys,os;print(os.path.dirname(sys.executable))"
+[Environment]::SetEnvironmentVariable("Path", $env:Path + ";$s", "User")
+```
+
+> ⚠️ **装了多个 Python 时最容易踩的坑**: `py -3` 永远挑**版本最高**的那个, 而你未必是
+> 往那个里面装的包 —— 于是报 `No module named deepskins`。
+> 先 `py -0p` 列出本机全部 Python 及其路径, 再用 `python -m pip show deepskins` 确认
+> 「当前这个 python 里到底有没有」。**记住一条: 用哪个 python 装的, 就用哪个 python 跑。**
+
 ## 方式一: 给 AI 一句话(DeepKing / Claude Code / Kimi Code / CodeX / Trae / Harness / Cursor …)
 
 把任一皮肤仓库链接发给 AI 并说「安装」, AI 读该仓库 `AGENTS.md` 自动完成全部步骤
@@ -78,7 +114,11 @@ Settings / Preferences → Appearance & Behavior → **Background Image** → `+
 
 ## 依赖与兼容
 
-- Python 3.9+(Pillow 缺失自动安装); 无 Python 时: Windows `winget install Python.Python.3.11`。
+- **Python 3.8 ~ 3.13 全部支持**（CI 里 3 个平台 × 6 个版本逐个装 wheel 再真跑一次）。
+  无 Python 时: Windows `winget install Python.Python.3.12`（任意 ≥3.8 的版本都行）、
+  macOS `brew install python`、Ubuntu `sudo apt install python3 python3-pil`。
+- 不确定自己是哪个版本: `python -V`; Windows 装了多个时 `py -0p` 列出全部。
+- Pillow 缺失时 `install` / `wallpaper` 会自动 pip 安装。
 - 运行目录隔离: DeepSeek 系列 `~/.deepskin*`, AI 全家桶 `~/.aifamily*`;32 套可同时安装互不覆盖。
 - 桌宠透明: Windows 原生支持; macOS/Linux 部分桌面不支持透明色会退化为白底卡片, 功能不受影响。
 

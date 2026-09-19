@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "deepskins"
-version = "0.11.0"
+version = "0.12.0"
 description = "DeepSeek 大肥鱼 & AI 全家桶 皮肤目录: 32 套壁纸一键克隆安装 + 壁纸切换 (pip install deepskins)"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -13,6 +13,13 @@ authors = [{ name = "WPH666-py" }]
 keywords = ["wallpaper", "deepseek", "ai", "skin", "desktop"]
 classifiers = [
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
 ]

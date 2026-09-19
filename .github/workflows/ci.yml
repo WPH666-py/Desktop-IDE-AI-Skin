@@ -1,0 +1,99 @@
+name: CI
+
+# 「不管用户装的是哪个 Python 3，都能装能用」这条承诺靠这里的版本矩阵守着。
+# 历史上 0.11.0 在 3.8 上 pip 装得成功、第一条命令就崩（importlib.resources.files 是 3.9+），
+# 只有跑矩阵才能发现——单版本开发机上一切正常。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: 测试 (${{ matrix.os }} / py${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: 运行测试套件
+        run: python -m unittest discover -s tests -t . -v
+
+  build:
+    name: 打包 + 校验
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 打包并校验 wheel/sdist
+        run: |
+          python -m pip install --upgrade build twine
+          python -m build
+          python -m twine check dist/*
+
+      - name: wheel 内容与元数据校验
+        run: |
+          python - <<'PY'
+          import glob, json, zipfile
+          whl = glob.glob("dist/*.whl")[0]
+          z = zipfile.ZipFile(whl)
+          names = z.namelist()
+          for need in ("deepskins/cli.py", "deepskins/catalog.json", "deepskins/__main__.py"):
+              assert need in names, "wheel 缺少 %s" % need
+          cat = json.loads(z.read("deepskins/catalog.json").decode("utf-8"))
+          assert len(cat["suits"]) == 32, "catalog 皮肤数不是 32: %d" % len(cat["suits"])
+          meta = z.read([n for n in names if n.endswith("METADATA")][0]).decode("utf-8")
+          assert "Requires-Python: >=3.8" in meta, "Requires-Python 不是 >=3.8（低版本用户会被 pip 拒绝）"
+          print("wheel 校验通过:", whl, "/", len(cat["suits"]), "套")
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/*
+
+  smoke:
+    name: 装 wheel 真跑一次 (py${{ matrix.python }})
+    # 用 build 出来的**发布产物**在 3.8~3.13 上逐个装一遍再运行——
+    # 这才是用户的真实路径（pip install deepskins），比从源码跑测试更接近现场。
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: 从 wheel 安装并在仓库外运行
+        run: |
+          python -m pip install dist/*.whl
+          cd /tmp
+          python -c "import sys, deepskins; print('import OK:', sys.version.split()[0], deepskins.__version__)"
+          deepskins --version
+          deepskins list | head -3
+          deepskins | head -3

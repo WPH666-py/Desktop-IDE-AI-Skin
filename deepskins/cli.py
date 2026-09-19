@@ -2,23 +2,28 @@
 """deepskins CLI: 列出 / 安装 / 切换壁纸 —— 大肥鱼 & AI 全家桶皮肤。
 
 用法:
+  deepskins                       # 不带参数 = 打印命令总览
   deepskins list                  # 列出全部皮肤
   deepskins url <id|repo>         # 打印仓库地址
   deepskins install <id|repo>     # 克隆到 ~/.deepskin-suits 并安装(生成+设置壁纸)
   deepskins wallpaper <id> [模式] # 直接切换某套的壁纸, 模式 grid|1..4|random|all
   deepskins doctor                # 体检: 代理探测 / 网络 / git / Python / Pillow
   deepskins sync                  # 克隆全部(不安装)
+  deepskins --version             # 看版本
+
+兼容性: 支持 Python 3.8 ~ 3.13(3.8 上不使用 3.9+ 才有的 API, 见 package_text)。
 """
 import argparse
 import json
 import os
 import subprocess
 import sys
-from importlib import resources
 
-from . import proxy
+from . import __version__, proxy
 
 ROOT_DIR = os.path.join(os.path.expanduser("~"), ".deepskin-suits")
+
+_PKG = __package__ or "deepskins"
 
 
 def prepare_console():
@@ -30,9 +35,44 @@ def prepare_console():
             pass
 
 
+def package_text(name):
+    """读取包内文本资源 —— 兼容**全部 Python 3**(3.8 / 3.9 / … / 3.13 实测)。
+
+    为什么不能直接用 `importlib.resources.files()`: 它是 **Python 3.9+** 的 API,
+    而本包声明 `requires-python = ">=3.8"`。3.8 上它会在**第一条命令**就抛
+    `AttributeError: module 'importlib.resources' has no attribute 'files'` ——
+    用户看到的现象是「pip 明明装成功了, 一敲 deepskins 就崩」。
+
+    三级回退, 任意 Python 3 都能拿到 catalog.json:
+      1. `importlib.resources.files()` —— 3.9+ 的现代写法(3.13 仍推荐);
+      2. `pkgutil.get_data()`         —— 3.0+ 通用, 对 zip 导入同样有效;
+      3. 按文件路径直读                —— 兜底(解包安装一定有这个文件)。
+    """
+    try:
+        from importlib import resources
+
+        files = getattr(resources, "files", None)  # 3.9+; 3.8 上为 None
+        if files is not None:
+            return files(_PKG).joinpath(name).read_text(encoding="utf-8")
+    except Exception:
+        pass
+
+    try:
+        import pkgutil
+
+        data = pkgutil.get_data(_PKG, name)
+        if data is not None:
+            return data.decode("utf-8")
+    except Exception:
+        pass
+
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), name)
+    with open(path, encoding="utf-8") as f:
+        return f.read()
+
+
 def load_catalog():
-    text = resources.files("deepskins").joinpath("catalog.json").read_text(encoding="utf-8")
-    return json.loads(text)
+    return json.loads(package_text("catalog.json"))
 
 
 def find_suit(catalog, key):
@@ -52,6 +92,7 @@ def cmd_list(args):
     print()
     for s in cat["suits"]:
         print("%-12s %-25s %-6s %s" % (s["id"], s["repo"], s["layout"], s["characters"]))
+    return 0
 
 
 def cmd_url(args):
@@ -231,10 +272,34 @@ def cmd_doctor(args):
     return 0
 
 
+def print_overview():
+    """不带任何参数时打印命令总览(与 genshen-skin 的行为保持一致)。"""
+    print("# deepskins %s —— 大肥鱼 & AI 全家桶 皮肤大全" % __version__)
+    print()
+    print("看目录")
+    print("  deepskins list                     列出全部皮肤")
+    print("  deepskins url <id|仓库名>          打印该套的仓库地址")
+    print()
+    print("装 / 换")
+    print("  deepskins install <id|仓库名>      克隆并安装(生成+设置壁纸)")
+    print("  deepskins wallpaper <id> [模式]    只换壁纸: grid | 1 | 2 | 3 | 4 | random | all")
+    print("  deepskins wallpaper <id> --list    看这套有哪些模式")
+    print("  deepskins sync                     克隆全部(不安装)")
+    print()
+    print("诊断")
+    print("  deepskins doctor                   体检: 代理探测 / 网络 / git / Pillow")
+    print("  deepskins --version                看当前版本")
+    print()
+    print("例: deepskins list   →   deepskins install deepseek-1   →   deepskins wallpaper deepseek-1 2")
+
+
 def main(argv=None):
     prepare_console()
-    ap = argparse.ArgumentParser(prog="deepskins", description="大肥鱼 & AI 全家桶 皮肤目录/安装器")
-    sub = ap.add_subparsers(dest="cmd", required=True)
+    ap = argparse.ArgumentParser(
+        prog="deepskins",
+        description="大肥鱼 & AI 全家桶 皮肤目录/安装器(不带参数运行 = 看命令总览)")
+    ap.add_argument("--version", action="version", version="deepskins %s" % __version__)
+    sub = ap.add_subparsers(dest="cmd")
     sub.add_parser("list", help="列出全部皮肤")
     p = sub.add_parser("url", help="打印仓库地址")
     p.add_argument("key")
@@ -247,7 +312,14 @@ def main(argv=None):
     p.add_argument("--list", dest="list_modes", action="store_true", help="只列出可用模式")
     sub.add_parser("doctor", help="体检: 代理探测 / 网络 / git / Pillow")
     sub.add_parser("sync", help="克隆全部皮肤(不安装)")
+    sub.add_parser("commands", aliases=["help"], help="打印命令总览")
     args = ap.parse_args(argv)
+    if not args.cmd:
+        print_overview()
+        return 0
+    if args.cmd in ("commands", "help"):
+        print_overview()
+        return 0
     if args.cmd == "list":
         return cmd_list(args)
     if args.cmd == "url":
