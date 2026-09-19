@@ -8,6 +8,7 @@
   deepskins install <id|repo>     # 克隆到 ~/.deepskin-suits 并安装(生成+设置壁纸)
   deepskins wallpaper <id> [模式] # 直接切换某套的壁纸, 模式 grid|1..4|random|all
   deepskins doctor                # 体检: 代理探测 / 网络 / git / Python / Pillow
+  deepskins mirror                # 国内镜像(清华/中科大/阿里)装包命令
   deepskins sync                  # 克隆全部(不安装)
   deepskins --version             # 看版本
 
@@ -24,6 +25,14 @@ from . import __version__, proxy
 ROOT_DIR = os.path.join(os.path.expanduser("~"), ".deepskin-suits")
 
 _PKG = __package__ or "deepskins"
+
+# 国内 PyPI 镜像 —— 与 genshen-desktop-skin 的 mirror.py 用同一套地址。
+# 都是 pypi.org 的只读镜像：自动同步、不能上传，发版只能发 PyPI 再等收录。
+MIRRORS = (
+    ("清华 TUNA", "https://pypi.tuna.tsinghua.edu.cn/simple"),
+    ("中科大 USTC", "https://mirrors.ustc.edu.cn/pypi/simple"),
+    ("阿里云", "https://mirrors.aliyun.com/pypi/simple"),
+)
 
 
 def prepare_console():
@@ -249,26 +258,49 @@ def cmd_doctor(args):
         ("GitHub(克隆皮肤仓库)", "https://github.com"),
         ("PyPI 官方源(pip 装包)", "https://pypi.org/simple/"),
         ("PyPI CDN(下载包体)", "https://files.pythonhosted.org/"),
-        ("清华镜像", "https://pypi.tuna.tsinghua.edu.cn/simple/"),
-    ]
+    ] + [("%s 镜像" % name, index + "/") for name, index in MIRRORS]
     results = {}
     for label, url in targets:
         ok, note = _https_ok(url)
         results[label] = ok
-        print("  %-24s %-42s %s" % (label, note, "✅" if ok else "❌"))
+        print("  %-26s %-42s %s" % (label, note, "✅" if ok else "❌"))
 
     # ---- 结论 ----
     print()
-    pypi_ok = results.get("PyPI 官方源(pip 装包)")
-    mirror_ok = results.get("清华镜像")
-    if pypi_ok:
+    working = [(n, i) for n, i in MIRRORS if results.get("%s 镜像" % n)]
+    if results.get("PyPI 官方源(pip 装包)"):
         print("结论: pypi.org 正常, `pip install deepskins` 可直接用。")
-    elif mirror_ok:
-        print("结论: pypi.org 连不上(TLS 被中断), 但镜像可用 —— 请用镜像装包:")
-        print("  pip install -i https://pypi.tuna.tsinghua.edu.cn/simple deepskins")
+        if working:
+            print("      国内网络想更快, 或用任一可用镜像:")
+            for name, index in working:
+                print("      pip install -i %s deepskins   # %s" % (index, name))
+    elif working:
+        print("结论: pypi.org 连不上(TLS 被中断), 但以下镜像可用 —— 任选一条装包:")
+        for name, index in working:
+            print("  pip install -i %s deepskins   # %s" % (index, name))
         print("  (已装好之后, 本包的 git/pip 调用会自动带上探测到的代理)")
     else:
-        print("结论: pypi.org 与镜像都连不上, 请检查网络或代理设置。")
+        print("结论: pypi.org 与国内镜像都连不上, 请检查网络或代理设置。")
+    return 0
+
+
+def cmd_mirror(args):
+    """打印可用的 PyPI 镜像与对应装包命令(国内网络用)。"""
+    print("# deepskins %s —— PyPI 镜像" % __version__)
+    print()
+    print("国内装包(任选一条, 通常比直连 pypi.org 快很多):")
+    for name, index in MIRRORS:
+        print("  pip install -i %s deepskins   # %s" % (index, name))
+    print()
+    print("官方源:")
+    print("  pip install deepskins")
+    print()
+    print("说明: 国内源都是 PyPI 的**只读镜像**, 自动从 pypi.org 同步; 作者只能发到 PyPI,")
+    print("      镜像随后收录(通常几分钟内)。可打开下面的地址确认新版本是否已同步:")
+    for name, index in MIRRORS:
+        print("  %-50s %s" % (index + "/deepskins/", name))
+    print()
+    print("实测哪个源连得通: deepskins doctor")
     return 0
 
 
@@ -288,6 +320,7 @@ def print_overview():
     print()
     print("诊断")
     print("  deepskins doctor                   体检: 代理探测 / 网络 / git / Pillow")
+    print("  deepskins mirror                   国内镜像(清华 / 中科大 / 阿里)装包命令")
     print("  deepskins --version                看当前版本")
     print()
     print("例: deepskins list   →   deepskins install deepseek-1   →   deepskins wallpaper deepseek-1 2")
@@ -311,6 +344,7 @@ def main(argv=None):
                    help="grid | 1 | 2 | 3 | 4 | random | all (默认 random)")
     p.add_argument("--list", dest="list_modes", action="store_true", help="只列出可用模式")
     sub.add_parser("doctor", help="体检: 代理探测 / 网络 / git / Pillow")
+    sub.add_parser("mirror", help="PyPI 国内镜像与装包命令")
     sub.add_parser("sync", help="克隆全部皮肤(不安装)")
     sub.add_parser("commands", aliases=["help"], help="打印命令总览")
     args = ap.parse_args(argv)
@@ -330,6 +364,8 @@ def main(argv=None):
         return cmd_wallpaper(args)
     if args.cmd == "doctor":
         return cmd_doctor(args)
+    if args.cmd == "mirror":
+        return cmd_mirror(args)
     if args.cmd == "sync":
         return cmd_sync(args)
     return 0

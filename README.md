@@ -25,6 +25,7 @@ deepskins install deepseek-1   # 克隆并安装(自动生成+设置壁纸)
 deepskins wallpaper deepseek-22        # 直接换第 22 套的壁纸(默认随机)
 deepskins wallpaper deepseek-22 1      # 切到第 1 张单图; 加 --list 看全部模式
 deepskins doctor               # 体检: 代理探测 / 网络 / git / Pillow
+deepskins mirror               # 国内镜像(清华 / 中科大 / 阿里)装包命令
 deepskins url aifamily-7       # 打印仓库地址
 deepskins sync                 # 克隆全部
 deepskins --version            # 看版本

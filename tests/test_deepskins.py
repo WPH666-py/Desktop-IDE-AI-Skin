@@ -210,6 +210,29 @@ class TestCli(unittest.TestCase):
     def test_find_suit_unknown_returns_none(self):
         self.assertIsNone(cli.find_suit(cli.load_catalog(), "不存在的皮肤xyz"))
 
+    def test_mirror_lists_three_sources(self):
+        """`deepskins mirror` 要把用户最常用的三个国内源都给出来。"""
+        code, out, _ = self._run(["mirror"])
+        self.assertEqual(0, code)
+        for host in ("pypi.tuna.tsinghua.edu.cn", "mirrors.ustc.edu.cn", "mirrors.aliyun.com"):
+            self.assertIn(host, out, "mirror 命令里缺 %s" % host)
+        self.assertIn("pip install -i", out)
+
+
+class TestMirrors(unittest.TestCase):
+    """国内镜像清单本身的不变量（清华 / 中科大 / 阿里）。"""
+
+    def test_three_chinese_mirrors_present(self):
+        self.assertEqual(3, len(cli.MIRRORS), "国内镜像应当正好三个")
+        hosts = [index for _name, index in cli.MIRRORS]
+        for needle, label in (("tuna.tsinghua", "清华"), ("ustc.edu.cn", "中科大"), ("aliyun.com", "阿里")):
+            self.assertTrue(any(needle in h for h in hosts), "缺 %s 源" % label)
+
+    def test_indexes_are_pip_index_urls(self):
+        for name, index in cli.MIRRORS:
+            self.assertTrue(index.startswith("https://"), "%s 不是 https" % name)
+            self.assertTrue(index.endswith("/simple"), "%s 不是 pip 的 index-url 形式" % name)
+
 
 class TestProxyModule(unittest.TestCase):
     """代理模块要能在无网络、无注册表的环境下安全导入与降级。

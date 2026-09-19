@@ -133,6 +133,21 @@ Settings / Preferences → Appearance & Behavior → **Background Image** → `+
 典型症状: `pip install deepskins` 报 `SSL: UNEXPECTED_EOF_WHILE_READING` 或
 `Read timed out (pypi.org:443)`。
 
+**还有一种更迷惑人的**: 报
+`ProxyError('Cannot connect to proxy.', FileNotFoundError(2, 'No such file or directory'))`，
+重试 5 次后以 `Could not find a version that satisfies the requirement deepskins
+(from versions: none)` 收尾 —— 看起来像"包不存在"，其实是**代理**问题:
+
+- Windows 的 `ProxyServer` 如果只有 `host:port`（没有 `http=...;https=...` 协议列表），
+  urllib 会把 https 代理拼成 `https://host:port`，pip 于是连不上；
+- 但浏览器/`Invoke-WebRequest` 用的是另一套逻辑，所以"网页能开、pip 装不上"。
+- 解法: 显式给 pip 一个 `http://` 代理
+  ```powershell
+  $env:HTTP_PROXY='http://localhost:7897'; $env:HTTPS_PROXY='http://localhost:7897'
+  pip install -i https://pypi.tuna.tsinghua.edu.cn/simple deepskins
+  ```
+  （端口以你的代理软件为准；`deepskins doctor` 会探测注册表里的系统代理。）
+
 原因通常是**桌面代理软件只设了 Windows 系统代理**:
 
 | 通道 | 读代理的方式 | 结果 |
@@ -146,10 +161,14 @@ Settings / Preferences → Appearance & Behavior → **Background Image** → `+
 deepskins doctor        # 已装好时: 直接看代理探测结果与各站点 HTTPS 实测
 ```
 
-1. **用国内镜像装**(最省事):
+1. **用国内镜像装**(最省事, 三个源任选; 都是 PyPI 只读镜像, 自动同步):
    ```bash
-   pip install -i https://pypi.tuna.tsinghua.edu.cn/simple deepskins
+   pip install -i https://pypi.tuna.tsinghua.edu.cn/simple deepskins   # 清华 TUNA
+   pip install -i https://mirrors.ustc.edu.cn/pypi/simple deepskins    # 中科大 USTC
+   pip install -i https://mirrors.aliyun.com/pypi/simple deepskins     # 阿里云
    ```
+   不想记这些地址: `deepskins mirror` 会把三条命令和「怎么确认镜像同步了」一起打出来;
+   `deepskins doctor` 会**实测**哪个源连得通, 直接给可用的那条。
 2. **给 pip 设一次环境变量**(之后 pip 自己就走代理了):
    ```powershell
    setx HTTPS_PROXY http://127.0.0.1:7897
