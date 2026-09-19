@@ -11,49 +11,59 @@
 
 ## A. 安装单个皮肤(最常用)
 
+> **调用格式统一**：Windows 用 `py -3`，macOS / Linux 用 `python3`。
+> 这些是仓库里的**脚本文件**，所以用 `py -3 <脚本>`（不是 `-m`）。
+
 ```bash
 git clone https://github.com/WPH666-py/<RepoName>.git "$HOME/<RepoName>"
 cd "$HOME/<RepoName>"
-python tools/install.py
+py -3 tools/install.py
 ```
 - 脚本自动: 装 Pillow → 按屏幕分辨率生成默认壁纸(2×2/1×2/全屏单图, 因套件而异)→ 设为系统壁纸。
-- Windows 无 Python: `winget install Python.Python.3.11`; macOS: `brew install python`; Ubuntu: `sudo apt install python3 python3-pil`。
-- 另附玩法: `python tools/wallpaper.py random --set` 随机、`cycle 30` 每 30 分钟随机、
+- 没有 Python 时: Windows `winget install Python.Python.3.12`（3.8~3.13 任一版本都行）;
+  macOS `brew install python`; Ubuntu `sudo apt install python3 python3-pil`。
+- 另附玩法: `py -3 tools/wallpaper.py random --set` 随机、`cycle 30` 每 30 分钟随机、
   `switcher.py` 图形切换器、`pet.py` 桌面桌宠(右键换表情)。
 - 用户说"壁纸被任务栏/桌面图标挡住"时: 各套件已默认 `--anchor top`(底部留白); 可再调
-  `python tools/wallpaper.py grid --anchor top --pad-bottom 15`(百分数), 或 `--anchor center` 回旧行为。
+  `py -3 tools/wallpaper.py grid --anchor top --pad-bottom 15`(百分数), 或 `--anchor center` 回旧行为。
+
+
 
 ## B. 全部克隆(可选)
 
 ```bash
-python scripts/sync_all.py      # 全部克隆到 ~/.deepskin-suits
+py -3 scripts/sync_all.py      # 全部克隆到 ~/.deepskin-suits
 ```
+
+
 或逐套 `bash <(python -c "import json,io; print('\n'.join('git clone --depth 1 '+s['url'] for s in json.load(open('catalog.json',encoding='utf-8'))['suits']))")`(等价)。
 
 ## C. pip 安装 Python 包
 
-**版本无关原则（重要，别给用户写死版本号）**：本包支持 **Python 3.8 ~ 3.13**，
-用户手上是哪个版本都行。推荐命令一律用 `python -m deepskins <子命令>`
-（用「装包的那个 python」，任何版本都对）；Windows 上 `python` 不在 PATH 时才退用
-`py -3 -m deepskins`。**绝不要**让用户照着 `...\Programs\Python\Python3<版本>\Scripts`
-这类**写死版本**的路径配 PATH —— 那只在用户恰好也装的同一版本时才成立。
-要路径就从解释器自身推导：
+**统一调用格式：Windows 一律 `py -3 -m`，macOS / Linux 一律 `python3 -m`。**
 
 ```powershell
-$s = python -c "import sys,os;print(os.path.dirname(sys.executable))"   # 该 python 的 Scripts 目录
-[Environment]::SetEnvironmentVariable("Path", $env:Path + ";$s", "User")
+py -3 -m pip install deepskins                                               # 已发布 PyPI(推荐)
+py -3 -m pip install "git+https://github.com/WPH666-py/Desktop-IDE-AI-Skin"  # 备用
+py -3 -m deepskins list                       # 列出全部 32 套
+py -3 -m deepskins install deepseek-1         # 克隆+设置壁纸
+py -3 -m deepskins wallpaper deepseek-1 1     # 切换某套壁纸(简写 1/2/3..; 加 --list 看模式)
+py -3 -m deepskins doctor                     # 体检: 代理 / 网络 / git / Pillow
+py -3 -m deepskins mirror                     # 国内镜像装包命令
 ```
 
-用户报 `No module named deepskins` 时，先分清「装到哪个 python 里了」：
-`py -0p` 列出全部版本、`python -m pip show deepskins` 确认当前这个有没有
-（`py -3` 永远挑版本最高的那个，未必是装了包的那个）。
+**为什么非要这个形式**：它不依赖 pip 的 `Scripts` 目录在不在 `PATH` 里。
+用户报「无法将 deepskins 项识别为 cmdlet / 不是内部或外部命令」时，让他改用上面的写法即可 ——
+**不要**再教他配 PATH，**绝不要**照着 `...\Programs\Python\Python3<版本>\Scripts`
+这类**写死版本**的路径去配：那只在用户恰好也是那个版本时才成立。
 
-```bash
-pip install deepskins         # 已发布 PyPI(推荐); 备用: pip install "git+https://github.com/WPH666-py/Desktop-IDE-AI-Skin"
-deepskins list                 # 列出全部 32 套
-deepskins install deepseek-1   # 克隆+设置壁纸
-deepskins wallpaper deepseek-1 1   # 直接切换某套的壁纸(简写 1/2/3..; 加 --list 看模式)
-```
+`py -3` 挑的是本机**版本最高**的 Python，未必是装了包的那个（症状：`No module named deepskins`）。
+先 `py -0p` 列出全部版本，再用 `py -3 -m pip show deepskins` 确认当前这个里有没有；
+必要时指定版本，例如 `py -3.12 -m deepskins list`。
+
+支持 Python **3.8 ~ 3.13**（CI 三平台 × 六版本逐个装 wheel 再真跑一次）。
+
+
 
 ## D. IDE 增强(按用户环境)
 
