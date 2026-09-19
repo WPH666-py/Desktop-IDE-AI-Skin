@@ -32,6 +32,22 @@ python scripts/sync_all.py      # 全部克隆到 ~/.deepskin-suits
 
 ## C. pip 安装 Python 包
 
+**版本无关原则（重要，别给用户写死版本号）**：本包支持 **Python 3.8 ~ 3.13**，
+用户手上是哪个版本都行。推荐命令一律用 `python -m deepskins <子命令>`
+（用「装包的那个 python」，任何版本都对）；Windows 上 `python` 不在 PATH 时才退用
+`py -3 -m deepskins`。**绝不要**让用户照着 `...\Programs\Python\Python3<版本>\Scripts`
+这类**写死版本**的路径配 PATH —— 那只在用户恰好也装的同一版本时才成立。
+要路径就从解释器自身推导：
+
+```powershell
+$s = python -c "import sys,os;print(os.path.dirname(sys.executable))"   # 该 python 的 Scripts 目录
+[Environment]::SetEnvironmentVariable("Path", $env:Path + ";$s", "User")
+```
+
+用户报 `No module named deepskins` 时，先分清「装到哪个 python 里了」：
+`py -0p` 列出全部版本、`python -m pip show deepskins` 确认当前这个有没有
+（`py -3` 永远挑版本最高的那个，未必是装了包的那个）。
+
 ```bash
 pip install deepskins         # 已发布 PyPI(推荐); 备用: pip install "git+https://github.com/WPH666-py/Desktop-IDE-AI-Skin"
 deepskins list                 # 列出全部 32 套
