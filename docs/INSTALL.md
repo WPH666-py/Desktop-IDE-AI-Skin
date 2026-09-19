@@ -3,51 +3,29 @@
 ## 方式〇: pip 安装(已发布到 PyPI 官方源, 最推荐)
 
 ```bash
-pip install deepskins          # 已发布: https://pypi.org/project/deepskins/
-deepskins list                 # 32 套一览
-deepskins doctor               # 体检: 代理探测 / 网络 / git / Pillow
-deepskins url deepseek-12      # 打印仓库地址
-deepskins install aifamily-7   # 克隆到 ~/.deepskin-suits 并设置壁纸
-deepskins wallpaper deepseek-22 1   # 直接切换第 22 套的第 1 张壁纸
-deepskins sync                 # 克隆全部 32 套
+py -3 -m pip install deepskins          # 已发布: https://pypi.org/project/deepskins/
+py -3 -m deepskins list                 # 32 套一览
+py -3 -m deepskins doctor               # 体检: 代理探测 / 网络 / git / Pillow
+py -3 -m deepskins url deepseek-12      # 打印仓库地址
+py -3 -m deepskins install aifamily-7   # 克隆到 ~/.deepskin-suits 并设置壁纸
+py -3 -m deepskins wallpaper deepseek-22 1   # 直接切换第 22 套的第 1 张壁纸
+py -3 -m deepskins sync                 # 克隆全部 32 套
 ```
-备用: `pip install "git+https://github.com/WPH666-py/Desktop-IDE-AI-Skin"`
+备用: `py -3 -m pip install "git+https://github.com/WPH666-py/Desktop-IDE-AI-Skin"`
 
-### 装完敲 `deepskins` 说「找不到命令」?（任何 Python 版本都适用）
+### 装完怎么跑（统一写法）
 
-`pip` 装完通常会打印一句警告: `...\Scripts' which is not on PATH`。此时直接敲
-`deepskins` 会报 `无法将"deepskins"项识别为 cmdlet…`(Windows)或 `command not found`
-(macOS / Linux)。**这不是安装失败** —— 先确认包在不在:
-
-```bash
-pip show deepskins        # 能显示版本就说明装好了
-```
-
-然后三选一。注意下面**没有写死任何 Python 版本号** —— 网上抄来的那种
-`...\Programs\Python\Python3<版本号>\Scripts` 路径, 只有当你恰好也装的正是那个版本时才成立:
-
-```bash
-# ① 最稳: 用模块方式调用。用「你装包的那个 python」跑, 3.8~3.13 都对
-python -m deepskins list
-py -3 -m deepskins list          # Windows 装了 py 启动器时
-python3 -m deepskins list        # macOS / Linux
-```
-
-```bash
-# ② 打印你这个 python 的 Scripts 目录(exe 就在里面), 再拿完整路径直接调
-python -c "import sys,os;print(os.path.dirname(sys.executable))"
-```
+本项目**统一用 `py -3 -m` 调用**（Windows）—— 这个形式不依赖 pip 的 `Scripts` 目录
+在不在 `PATH` 里，所以不存在「命令找不到」的问题：
 
 ```powershell
-# ③ 把它永久加进用户 PATH(之后重开终端, deepskins 就能直接敲)
-$s = python -c "import sys,os;print(os.path.dirname(sys.executable))"
-[Environment]::SetEnvironmentVariable("Path", $env:Path + ";$s", "User")
+py -3 -m deepskins list          # Windows
+python3 -m deepskins list        # macOS / Linux：把 py -3 换成 python3 即可
 ```
 
-> ⚠️ **装了多个 Python 时最容易踩的坑**: `py -3` 永远挑**版本最高**的那个, 而你未必是
-> 往那个里面装的包 —— 于是报 `No module named deepskins`。
-> 先 `py -0p` 列出本机全部 Python 及其路径, 再用 `python -m pip show deepskins` 确认
-> 「当前这个 python 里到底有没有」。**记住一条: 用哪个 python 装的, 就用哪个 python 跑。**
+`py -3` 挑的是本机**版本最高**的那个 Python。装了多个、而包不在最高的那个里时，
+先 `py -0p` 看全部版本，再指定版本调用，例如 `py -3.12 -m deepskins list`。
+确认包装没装：`py -3 -m pip show deepskins`。
 
 ## 方式一: 给 AI 一句话(DeepKing / Claude Code / Kimi Code / CodeX / Trae / Harness / Cursor …)
 
@@ -62,36 +40,41 @@ $s = python -c "import sys,os;print(os.path.dirname(sys.executable))"
 ## 方式二: pip 安装 `deepskins`(git 备用)
 
 ```bash
-pip install "git+https://github.com/WPH666-py/Desktop-IDE-AI-Skin"
+py -3 -m pip install "git+https://github.com/WPH666-py/Desktop-IDE-AI-Skin"
 
-deepskins list                  # 32 套一览
-deepskins url deepseek-12       # 打印仓库地址
-deepskins install aifamily-7    # 克隆到 ~/.deepskin-suits 并设置壁纸
-deepskins wallpaper deepseek-22 # 直接切换第 22 套的壁纸(不带模式=随机)
-deepskins wallpaper deepseek-15 3   # 切到第 3 张单图(简写 1/2/3/4)
-deepskins wallpaper deepseek-15 --list   # 看这套有哪些模式
-deepskins sync                  # 克隆全部 32 套
+py -3 -m deepskins list                  # 32 套一览
+py -3 -m deepskins url deepseek-12       # 打印仓库地址
+py -3 -m deepskins install aifamily-7    # 克隆到 ~/.deepskin-suits 并设置壁纸
+py -3 -m deepskins wallpaper deepseek-22 # 直接切换第 22 套的壁纸(不带模式=随机)
+py -3 -m deepskins wallpaper deepseek-15 3   # 切到第 3 张单图(简写 1/2/3/4)
+py -3 -m deepskins wallpaper deepseek-15 --list   # 看这套有哪些模式
+py -3 -m deepskins sync                  # 克隆全部 32 套
 ```
 
+> **macOS / Linux 把 `py -3` 换成 `python3`**，其余完全一样。
+>
 > PyPI 说明: `pyproject.toml` 已按发布规范写好。官方源(pypi.org)上传需要你自己的 PyPI 账号令牌,
-> 后续只需: `python -m pip install build twine && python -m build && python -m twine upload dist/*`。
+> 后续只需: `py -3 -m pip install build twine && py -3 -m build && py -3 -m twine upload dist/*`。
 
 ## 方式三: 手动(git)
 
 ```bash
 git clone https://github.com/WPH666-py/<任意皮肤仓库>.git
 cd <仓库>
-python tools/install.py          # Windows 亦可直接双击 install.bat
+py -3 tools/install.py           # Windows 亦可直接双击 install.bat
 ```
 
 ## 每套皮肤通用玩法
 
+> 这些是**仓库里自带的脚本文件**，所以用 `py -3 <脚本路径>` 调用（不是 `-m`）。
+> macOS / Linux 换成 `python3`。
+
 ```bash
-python tools/wallpaper.py grid --set      # 默认壁纸(2x2 / 1x2 / 全屏单图 依套件)
-python tools/wallpaper.py random --set    # 随机一张
-python tools/wallpaper.py cycle 30        # 每 30 分钟自动随机(Ctrl+C 停止)
-python tools/switcher.py                  # 可视化切换器
-python tools/pet.py                       # 桌面桌宠(右键换表情, Esc 退出)
+py -3 tools/wallpaper.py grid --set      # 默认壁纸(2x2 / 1x2 / 全屏单图 依套件)
+py -3 tools/wallpaper.py random --set    # 随机一张
+py -3 tools/wallpaper.py cycle 30        # 每 30 分钟自动随机(Ctrl+C 停止)
+py -3 tools/switcher.py                  # 可视化切换器
+py -3 tools/pet.py                       # 桌面桌宠(右键换表情, Esc 退出)
 ```
 
 ## VS Code / Trae / CodeX 扩展
@@ -107,7 +90,7 @@ code --install-extension vscode/ai-family-skin-suit7-0.1.0.vsix # AI 全家桶�
 ## JetBrains(PyCharm / WebStorm / IntelliJ)
 
 ```bash
-python tools/wallpaper.py all --out "$HOME/Skins"
+py -3 tools/wallpaper.py all --out "$HOME/Skins"
 ```
 Settings / Preferences → Appearance & Behavior → **Background Image** → `+` 选择生成的图片
 (建议编辑器区用单图、欢迎页用 2×2/1×2 拼贴)。
@@ -117,7 +100,7 @@ Settings / Preferences → Appearance & Behavior → **Background Image** → `+
 - **Python 3.8 ~ 3.13 全部支持**（CI 里 3 个平台 × 6 个版本逐个装 wheel 再真跑一次）。
   无 Python 时: Windows `winget install Python.Python.3.12`（任意 ≥3.8 的版本都行）、
   macOS `brew install python`、Ubuntu `sudo apt install python3 python3-pil`。
-- 不确定自己是哪个版本: `python -V`; Windows 装了多个时 `py -0p` 列出全部。
+- 不确定自己是哪个版本: `py -3 -V`; Windows 装了多个时 `py -0p` 列出全部。
 - Pillow 缺失时 `install` / `wallpaper` 会自动 pip 安装。
 - 运行目录隔离: DeepSeek 系列 `~/.deepskin*`, AI 全家桶 `~/.aifamily*`;32 套可同时安装互不覆盖。
 - 桌宠透明: Windows 原生支持; macOS/Linux 部分桌面不支持透明色会退化为白底卡片, 功能不受影响。
@@ -130,7 +113,7 @@ Settings / Preferences → Appearance & Behavior → **Background Image** → `+
 
 ## 装不上 / SSL 报错怎么办
 
-典型症状: `pip install deepskins` 报 `SSL: UNEXPECTED_EOF_WHILE_READING` 或
+典型症状: `py -3 -m pip install deepskins` 报 `SSL: UNEXPECTED_EOF_WHILE_READING` 或
 `Read timed out (pypi.org:443)`。
 
 **还有一种更迷惑人的**: 报
@@ -138,37 +121,36 @@ Settings / Preferences → Appearance & Behavior → **Background Image** → `+
 重试 5 次后以 `Could not find a version that satisfies the requirement deepskins
 (from versions: none)` 收尾 —— 看起来像"包不存在"，其实是**代理**问题:
 
-- Windows 的 `ProxyServer` 如果只有 `host:port`（没有 `http=...;https=...` 协议列表），
-  urllib 会把 https 代理拼成 `https://host:port`，pip 于是连不上；
-- 但浏览器/`Invoke-WebRequest` 用的是另一套逻辑，所以"网页能开、pip 装不上"。
-- 解法: 显式给 pip 一个 `http://` 代理
+- 浏览器与 `Invoke-WebRequest` 会走 Windows 系统代理，所以"网页能开"；
+  但 pip 走的是另一套（且常被注册表里格式不规范的 `ProxyServer` 卡住）。
+- 解法: 显式给 pip 一个 `http://` 代理，它立刻就通
   ```powershell
   $env:HTTP_PROXY='http://localhost:7897'; $env:HTTPS_PROXY='http://localhost:7897'
-  pip install -i https://pypi.tuna.tsinghua.edu.cn/simple deepskins
+  py -3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple deepskins
   ```
-  （端口以你的代理软件为准；`deepskins doctor` 会探测注册表里的系统代理。）
+  （端口以你的代理软件为准；`py -3 -m deepskins doctor` 会探测注册表里的系统代理。）
 
 原因通常是**桌面代理软件只设了 Windows 系统代理**:
 
 | 通道 | 读代理的方式 | 结果 |
 |---|---|---|
 | git | 读 Windows 系统代理(注册表) | 能用 → 克隆皮肤仓库正常 |
-| pip / requests | **只读 `HTTP_PROXY` / `HTTPS_PROXY` 环境变量** | 读不到 → 直连 pypi.org, 在受限网络下就断 |
+| pip / requests | 不读环境变量以外的设置就常连不上 | 受限网络下报 SSL / ProxyError |
 
 诊断与三条出路:
 
 ```bash
-deepskins doctor        # 已装好时: 直接看代理探测结果与各站点 HTTPS 实测
+py -3 -m deepskins doctor        # 已装好时: 直接看代理探测结果与各站点 HTTPS 实测
 ```
 
 1. **用国内镜像装**(最省事, 三个源任选; 都是 PyPI 只读镜像, 自动同步):
    ```bash
-   pip install -i https://pypi.tuna.tsinghua.edu.cn/simple deepskins   # 清华 TUNA
-   pip install -i https://mirrors.ustc.edu.cn/pypi/simple deepskins    # 中科大 USTC
-   pip install -i https://mirrors.aliyun.com/pypi/simple deepskins     # 阿里云
+   py -3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple deepskins   # 清华 TUNA
+   py -3 -m pip install -i https://mirrors.ustc.edu.cn/pypi/simple deepskins    # 中科大 USTC
+   py -3 -m pip install -i https://mirrors.aliyun.com/pypi/simple deepskins     # 阿里云
    ```
-   不想记这些地址: `deepskins mirror` 会把三条命令和「怎么确认镜像同步了」一起打出来;
-   `deepskins doctor` 会**实测**哪个源连得通, 直接给可用的那条。
+   不想记这些地址: `py -3 -m deepskins mirror` 会把三条命令和「怎么确认镜像同步了」一起打出来;
+   `py -3 -m deepskins doctor` 会**实测**哪个源连得通, 直接给可用的那条。
 2. **给 pip 设一次环境变量**(之后 pip 自己就走代理了):
    ```powershell
    setx HTTPS_PROXY http://127.0.0.1:7897
@@ -177,7 +159,7 @@ deepskins doctor        # 已装好时: 直接看代理探测结果与各站点 
    (端口以你的代理软件为准; 重新开一个终端生效)
 3. **临时单次使用**:
    ```bash
-   pip install --proxy http://127.0.0.1:7897 deepskins
+   py -3 -m pip install --proxy http://127.0.0.1:7897 deepskins
    ```
 
 > 包内已内置代理自动探测: `deepskins install/wallpaper` 在调用 **git 克隆** 和
@@ -194,9 +176,9 @@ deepskins doctor        # 已装好时: 直接看代理探测结果与各站点 
 各套件已内置**垂直锚点**, 默认 `top`(把内容放进安全区, 底部留白):
 
 ```bash
-python tools/wallpaper.py grid --anchor top      # 默认: 底部留白(2×2 约 120px)
-python tools/wallpaper.py grid --anchor center   # 回到旧的居中(会压到任务栏)
-python tools/wallpaper.py grid --pad-bottom 20   # 自定义底部预留(百分数或 0~1 小数)
+py -3 tools/wallpaper.py grid --anchor top      # 默认: 底部留白(2×2 约 120px)
+py -3 tools/wallpaper.py grid --anchor center   # 回到旧的居中(会压到任务栏)
+py -3 tools/wallpaper.py grid --pad-bottom 20   # 自定义底部预留(百分数或 0~1 小数)
 ```
 
 也可用环境变量: `DEEPSKIN_GRID_ANCHOR=top|center|bottom`、`DEEPSKIN_GRID_PAD_BOTTOM=11`(百分数)。

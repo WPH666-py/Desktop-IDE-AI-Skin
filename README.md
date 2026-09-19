@@ -18,32 +18,31 @@ AI 会读取该仓库的 `AGENTS.md` 自动完成: 克隆 → 装 Pillow → 生
 
 ### ② pip 安装(已发布 PyPI 官方源)
 ```bash
-pip install deepskins          # https://pypi.org/project/deepskins/
-deepskins                      # 不带参数 = 命令总览
-deepskins list                 # 列出全部 32 套
-deepskins install deepseek-1   # 克隆并安装(自动生成+设置壁纸)
-deepskins wallpaper deepseek-22        # 直接换第 22 套的壁纸(默认随机)
-deepskins wallpaper deepseek-22 1      # 切到第 1 张单图; 加 --list 看全部模式
-deepskins doctor               # 体检: 代理探测 / 网络 / git / Pillow
-deepskins mirror               # 国内镜像(清华 / 中科大 / 阿里)装包命令
-deepskins url aifamily-7       # 打印仓库地址
-deepskins sync                 # 克隆全部
-deepskins --version            # 看版本
+py -3 -m pip install deepskins          # https://pypi.org/project/deepskins/
+py -3 -m deepskins                      # 不带参数 = 命令总览
+py -3 -m deepskins list                 # 列出全部 32 套
+py -3 -m deepskins install deepseek-1   # 克隆并安装(自动生成+设置壁纸)
+py -3 -m deepskins wallpaper deepseek-22        # 直接换第 22 套的壁纸(默认随机)
+py -3 -m deepskins wallpaper deepseek-22 1      # 切到第 1 张单图; 加 --list 看全部模式
+py -3 -m deepskins doctor               # 体检: 代理探测 / 网络 / git / Pillow
+py -3 -m deepskins mirror               # 国内镜像(清华 / 中科大 / 阿里)装包命令
+py -3 -m deepskins url aifamily-7       # 打印仓库地址
+py -3 -m deepskins sync                 # 克隆全部
+py -3 -m deepskins --version            # 看版本
 ```
 > **兼容性: Python 3.8 ~ 3.13 全部支持**（CI 里 3 平台 × 6 版本逐个装 wheel 真跑）。
-> `pip` 装完若敲 `deepskins` 提示「找不到命令」，那不是安装失败 —— 见
-> [docs/INSTALL.md](docs/INSTALL.md) 里「装完敲 deepskins 说找不到命令」一节，
-> 里面给的是**从当前 python 推导路径**的写法，不写死任何版本号。
+> **统一用 `py -3 -m` 调用**：不依赖 pip 的 `Scripts` 目录在不在 `PATH`，也不用管你装的是哪个 Python 版本。
+> **macOS / Linux 把 `py -3` 换成 `python3`**，其余完全一样；装了多个 Python 时先 `py -0p` —— `py -3` 挑的是**版本最高**的那个。
 >
 > 本包完全符合 PyPI 规范(pyproject.toml)。由于需要你的 PyPI 账号凭据才能发布到官方源,
-> 默认走 `git+` 安装; 之后你可用 `python -m build && python -m twine upload dist/*` 一键上传。
-> `deepskins wallpaper <id> [模式]` 会自动找到(必要时克隆)对应皮肤仓库、合成并设为系统壁纸,
+> 默认走 `py -3 -m pip install "git+..."` 安装; 之后你可用 `py -3 -m build && py -3 -m twine upload dist/*` 一键上传。
+> `py -3 -m deepskins wallpaper <id> [模式]` 会自动找到(必要时克隆)对应皮肤仓库、合成并设为系统壁纸,
 > 不用自己进仓库找脚本。
 
 ### ③ 手动
 ```bash
 git clone <任一皮肤仓库> && cd <仓库>
-python tools/install.py        # 生成壁纸并设置桌面(Windows 也可双击 install.bat)
+py -3 tools/install.py         # 生成壁纸并设置桌面(Windows 也可双击 install.bat)
 ```
 
 ## 📚 皮肤目录
