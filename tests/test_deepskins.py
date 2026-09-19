@@ -212,7 +212,12 @@ class TestCli(unittest.TestCase):
 
 
 class TestProxyModule(unittest.TestCase):
-    """代理模块要能在无网络、无注册表的环境下安全导入与降级。"""
+    """代理模块要能在无网络、无注册表的环境下安全导入与降级。
+
+    注意：这里一律 mock 掉 `proxy.detect()`。真去探测会依赖**跑测试的这台机器**
+    （本机开着 Clash 就有代理、CI runner 上就没有），断言会随机红 ——
+    实测踩过：CI 全矩阵 18 个任务因为这一条挂掉。
+    """
 
     def test_normalize(self):
         from deepskins import proxy
@@ -222,12 +227,42 @@ class TestProxyModule(unittest.TestCase):
         self.assertIsNone(proxy._normalize(""))
         self.assertIsNone(proxy._normalize("   "))
 
-    def test_env_with_proxy_returns_copy(self):
+    def test_env_with_proxy_injects_detected_proxy(self):
         from deepskins import proxy
 
-        env = proxy.env_with_proxy({"PATH": "x"})
+        base = {"PATH": "x"}
+        with mock.patch.object(proxy, "detect", return_value=("http://127.0.0.1:7897", "测试")):
+            env = proxy.env_with_proxy(base)
         self.assertEqual("x", env["PATH"])
-        self.assertIn("HTTP_PROXY", env)
+        self.assertEqual("http://127.0.0.1:7897", env["HTTP_PROXY"])
+        self.assertEqual("http://127.0.0.1:7897", env["HTTPS_PROXY"])
+        self.assertNotIn("HTTP_PROXY", base, "不应改动传进来的 dict")
+
+    def test_env_with_proxy_without_proxy(self):
+        """没探测到代理时不该凭空塞代理变量（无网 / CI 环境就是这种）。"""
+        from deepskins import proxy
+
+        with mock.patch.object(proxy, "detect", return_value=(None, "未探测到")):
+            env = proxy.env_with_proxy({"PATH": "x"})
+        self.assertEqual("x", env["PATH"])
+        self.assertNotIn("HTTP_PROXY", env)
+
+    def test_pip_and_git_args_without_proxy(self):
+        from deepskins import proxy
+
+        with mock.patch.object(proxy, "detect", return_value=(None, "未探测到")):
+            self.assertEqual([], proxy.pip_args())
+            # 没代理时不应因 git 是否安装而炸
+            self.assertEqual([], proxy.git_config_args())
+
+    def test_detect_respects_off_switch(self):
+        """DEEPSKINS_NO_PROXY=1 时探测必须返回 None（用户显式关掉）。"""
+        from deepskins import proxy
+
+        with mock.patch.dict(os.environ, {"DEEPSKINS_NO_PROXY": "1"}):
+            url, source = proxy.detect(force=True)
+        self.assertIsNone(url)
+        self.assertIn("DEEPSKINS_NO_PROXY", source)
 
 
 if __name__ == "__main__":
