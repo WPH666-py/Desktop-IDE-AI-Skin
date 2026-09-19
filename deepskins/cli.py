@@ -267,40 +267,53 @@ def cmd_doctor(args):
 
     # ---- 结论 ----
     print()
+    px = pip_prefix()
     working = [(n, i) for n, i in MIRRORS if results.get("%s 镜像" % n)]
     if results.get("PyPI 官方源(pip 装包)"):
-        print("结论: pypi.org 正常, `pip install deepskins` 可直接用。")
+        print("结论: pypi.org 正常, `%s pip install deepskins` 可直接用。" % px)
         if working:
             print("      国内网络想更快, 或用任一可用镜像:")
             for name, index in working:
-                print("      pip install -i %s deepskins   # %s" % (index, name))
+                print("      %s pip install -i %s deepskins   # %s" % (px, index, name))
     elif working:
         print("结论: pypi.org 连不上(TLS 被中断), 但以下镜像可用 —— 任选一条装包:")
         for name, index in working:
-            print("  pip install -i %s deepskins   # %s" % (index, name))
+            print("  %s pip install -i %s deepskins   # %s" % (px, index, name))
         print("  (已装好之后, 本包的 git/pip 调用会自动带上探测到的代理)")
     else:
         print("结论: pypi.org 与国内镜像都连不上, 请检查网络或代理设置。")
     return 0
 
 
+def pip_prefix():
+    """打印给用户看的 Python 调用前缀 —— 与文档统一成 `py -3 -m`。
+
+    为什么不打印裸 `pip` / `deepskins`: 那要求 pip 的 Scripts 目录在 PATH 里,
+    而这一步恰恰是用户最常卡住的地方。`py -3 -m pip` / `py -3 -m deepskins`
+    只依赖 Windows 自带的 py 启动器, 与 PATH 无关。
+    macOS / Linux 没有 py 启动器, 用 python3 -m。
+    """
+    return "py -3 -m" if os.name == "nt" else "python3 -m"
+
+
 def cmd_mirror(args):
     """打印可用的 PyPI 镜像与对应装包命令(国内网络用)。"""
+    px = pip_prefix()
     print("# deepskins %s —— PyPI 镜像" % __version__)
     print()
     print("国内装包(任选一条, 通常比直连 pypi.org 快很多):")
     for name, index in MIRRORS:
-        print("  pip install -i %s deepskins   # %s" % (index, name))
+        print("  %s pip install -i %s deepskins   # %s" % (px, index, name))
     print()
     print("官方源:")
-    print("  pip install deepskins")
+    print("  %s pip install deepskins" % px)
     print()
     print("说明: 国内源都是 PyPI 的**只读镜像**, 自动从 pypi.org 同步; 作者只能发到 PyPI,")
     print("      镜像随后收录(通常几分钟内)。可打开下面的地址确认新版本是否已同步:")
     for name, index in MIRRORS:
         print("  %-50s %s" % (index + "/deepskins/", name))
     print()
-    print("实测哪个源连得通: deepskins doctor")
+    print("实测哪个源连得通: %s deepskins doctor" % px)
     return 0
 
 
